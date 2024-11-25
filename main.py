@@ -35,13 +35,14 @@ def main_menu(message):
         # Отправляем изображение
     bot.send_photo(message.chat.id, photo_url, caption="Здравствуйте 👋! Я - Шлюха👯, бот прачечной ЯГАНДОН🔞 и Ваш верный помощник в мире чистоты!\n"
                                       "\n"
-                                      "Выберите действие которое Вас интересует", reply_markup=markup)
+                                      "Выберите действие которое Вас интересует",reply_markup=markup)
     #bot.send_message(message.chat.id, "Здравствуйте 👋! Я - Шлюха👯, бот прачечной ЯГАНДОН🔞 и Ваш верный помощник в мире чистоты!\n"
                                      # "\n"
                                       #"Выберите действие которое Вас интересует", reply_markup=markup)
 
-
-
+def handle_message(message):
+    if message.text == 'Посмотреть услуги🔥' or message.text == 'Кнопка 2':
+        bot.edit_message_reply_markup(chat_id=message.chat.id, message_id=message.message_id, reply_markup=None)
 
 @bot.message_handler(func=lambda message: message.text == "Посмотреть услуги🔥")
 def consulting_services(message):
@@ -59,12 +60,16 @@ def consulting_services(message):
             "\n"
             " Для заказа просто нажмите 'Сделать заказ💳'\n",reply_markup=keyboard)
 
+
+
 # обработка кнопки назад
 @bot.callback_query_handler(func=lambda call: True)
 def handle_query(call):
     if call.data == 'button1':
         main_menu(call.message)
+        bot.delete_message(call.message.chat.id, call.message.message_id)
         #bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=main_menu())
+
 
 
 # сделать заказ
@@ -77,10 +82,12 @@ def servises_services(message):
     markup.add("Назад")
     bot.send_message(message.chat.id,"Прекрасно✨! Пожалуйста, выберите, что именно Вас интересует из списка ниже 👇",reply_markup=markup)
 
+
 # Обработка кнопки Назад
 @bot.message_handler(func=lambda message: message.text == "Назад")
 def go_back(message):
     main_menu(message)
+
 
 
 # Стирка
@@ -109,19 +116,16 @@ def huichistha(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("Назад🔙")
     bot.send_message(message.chat.id, "Ой бля, сам себе хуй почистишь", reply_markup=markup)
-@bot.message_handler(func=lambda message: message.text == "Назад🔙")
-def go_back(message):
-    servises_services(message)
 
 
 
-
-
-# Обработка выбора услуги
 @bot.message_handler(func=lambda message: True)
 def handle_service_selection(message):
     service = message.text
     if service in ["По весу"]:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add("Назад")
+
         # Сохранение заказа в базе данных
         conn = sqlite3.connect('laundry_orders.db')
         cursor = conn.cursor()
@@ -129,22 +133,8 @@ def handle_service_selection(message):
         conn.commit()
         conn.close()
 
-        bot.send_message(message.chat.id, f"Вы выбрали услугу: {service}. Ваш заказ принят!")
-    else:
-        bot.send_message(message.chat.id, "Пожалуйста, выберите одну из предложенных услуг.")
+        bot.send_message(message.chat.id, f"Вы выбрали услугу: {service}. Ваш заказ принят! Для выхода в главное меню нажмите 'назад'",reply_markup=markup)
 
-@bot.message_handler(func=lambda message: True)
-def handle_service_selection(message):
-    service = message.text
-    if service in ["По весу"]:
-        # Сохранение заказа в базе данных
-        conn = sqlite3.connect('laundry_orders.db')
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO orders (user_id, service) VALUES (?, ?)", (message.from_user.id, service))
-        conn.commit()
-        conn.close()
-
-        bot.send_message(message.chat.id, f"Вы выбрали услугу: {service}. Ваш заказ принят!")
     else:
         bot.send_message(message.chat.id, "Пожалуйста, выберите одну из предложенных услуг.")
 
